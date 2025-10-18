@@ -1,0 +1,29 @@
+# ===================================================================
+# Go Project .gitignore
+# ===================================================================
+
+# Compiled executable
+# This will ignore the binary file created by `go build`
+AI-Bot-GOlang-Wit.ai-Wolfram-Slack
+
+# Environment variables - IMPORTANT
+# Store sensitive information like API keys in these files
+.env
+.env.local
+.env.*.local
+
+# IDE / Editor directories
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# Test coverage
+coverage.out
+coverage/
+
+# OS-generated files
+.DS_Store
+ehthumbs.db
+Thumbs.db
