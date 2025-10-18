@@ -33,7 +33,7 @@ func main() {
 
 	bot := slacker.NewClient(os.Getenv("SLACK_BOT_TOKEN"), os.Getenv("SLACK_APP_TOKEN")) // to get access token use https://api.slack.com/custom-integrations/legacy-tokens
 	client := witai.NewClient(os.Getenv("WIT_AI_TOKEN"))                                 // to get access token use https://wit.ai
-	wolframClient := &wolfram.Client{AppID: os.Getenv("WOLFRAM_APP_ID")}                 // to get access token use https://www.wolframalpha.com/
+	wolframClient = &wolfram.Client{AppID: os.Getenv("WOLFRAM_APP_ID")}                  // to get access token use https://www.wolframalpha.com/
 	go printCommandEvents(bot.CommandEvents())                                           // print function from slacker package to get command events
 
 	bot.Command("query for bot - <message>", &slacker.CommandDefinition{
