@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/krognol/go-wolfram"
@@ -72,6 +73,57 @@ func main() {
 				return
 			}
 			response.Reply(res)
+		},
+	})
+
+	bot.Command("full query for bot - <message>", &slacker.CommandDefinition{
+		Description: "send any question to wolfram for a full report",
+		Example:     "weather in new york",
+		Handler: func(botCtx slacker.BotContext, request slacker.Request, response slacker.ResponseWriter) {
+			query := request.Param("message")
+
+			// Let the user know we're working on it
+			response.Reply("Thinking...")
+
+			msg, err := client.Parse(&witai.MessageRequest{
+				Query: query,
+			})
+			if err != nil {
+				log.Printf("error calling Wit.ai: %v", err)
+				response.Reply("Sorry, I'm having trouble understanding right now.")
+				return
+			}
+
+			data, _ := json.MarshalIndent(msg, "", "    ")
+			rough := string(data[:])
+			value := gjson.Get(rough, "entities.wit$wolfram_search_query:wolfram_search_query.0.value")
+			answer := query // Fallback to the original query
+			if value.Exists() {
+				answer = value.String()
+			}
+
+			// Use GetQueryResult for a full, structured response
+			res, err := wolframClient.GetQueryResult(answer, nil)
+			if err != nil {
+				log.Printf("wolfram full query failed: %v", err)
+				response.Reply("Sorry, I couldn't get a full report from Wolfram Alpha.")
+				return
+			}
+
+			if res.Success == "false" || len(res.Pods) < 2 {
+				response.Reply("Sorry, Wolfram Alpha couldn't find an answer for that.")
+				return
+			}
+
+			// The first pod is usually the input interpretation, the second is the primary result.
+			// We will format and return the text from the second pod.
+			// For a more advanced bot, you could iterate through all pods.
+			pod := res.Pods[1]
+			var builder strings.Builder
+			builder.WriteString(fmt.Sprintf("*%s*\n", pod.Title))
+			builder.WriteString(fmt.Sprintf("```%s```", pod.SubPods[0].Plaintext))
+
+			response.Reply(builder.String())
 		},
 	})
 
